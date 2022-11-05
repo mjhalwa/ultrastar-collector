@@ -1,0 +1,12 @@
+# input files
+*.url
+*.txt
+*.jpg
+*.info
+
+# output files
+*.url
+*.mp4
+*.mp3
+*.ori
+*.log

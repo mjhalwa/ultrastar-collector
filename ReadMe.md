@@ -1,0 +1,29 @@
+# UltraStar Deluxe Video und Musik Sammler
+
+## Dependencies
+
+- Python 3.11.0
+- ffmpeg installiert und im System-Pfad
+- youtube-dl installiert und im System-Pfad
+
+## Input
+
+Verzeichnis, das je Lied folgende Dateien enthält
+
+- `{Name}.txt` ... Spiel-Dateien von z.B.[http://usdb.animux.de](http://usdb.animux.de)
+- `{Name}.url` ... Youtube-Link-Datei zum Video, dass zum Lied passt (Quelle für mp3- und Video-Datei)
+- `{Name} - Cover.jpg` ... Voransicht-Bild
+- `{Name}.info` ... Optionale Text-Datei, die 1:1 in das Ergebnisverzeichnis übernommen wird für z.B. `BPM`- oder `GAP`-Vorschläge der Kommentare auf [http://usdb.animux.de](http://usdb.animux.de)
+
+Der Benennung der Dateien `{Name} = {Artist} - {Title}` wird direkt für die Ausgabe verwendet. __Alle Dateien mit gleichem Namen werden zusammen verarbeitet__.
+
+## Ausgabe
+
+Je Input-Gruppe `{Name}` ein Verzeichnis `{Name}`  mit folgenden Dateien
+
+- `{Name}.ori` ... 1:1 `{Name}.txt` aus dem Input
+- `{Name}.txt` ... angepasste Spiel-Datei mit z.B. ausgefülltem `MP3`-, `Video`- und `Cover`-Zeilen
+- `{Name}.url` ... 1:1 aus dem Input
+- `{Name} - Cover.jpg` ... 1:1 aus dem Input als `#COVER` in `{Name}.txt`
+- `{Name}.mp3` ... extrahierte Musik-Datei aus Youtube-Video als `#MP3` in `{Name}.txt`
+- `{Name} {Auflösung}.mp4` ... min. 1, max. 2 Video-Dateien von Youtube. Versucht wird 1x ein Video mit Audiodatei und 1x ein Video mit bester Auflösung (max 720p, sonst ruckelt das Spiel) herunterzuladen (Falls es ein 720p-Video mit Audio gibt, dann nur 1 Datei). Das Video mit der besseren Auflösung dient als `#VIDEO` in `{Name}.txt`, aus dem Video mit Audio-Datei wird diese als `mp3` extrahiert.
