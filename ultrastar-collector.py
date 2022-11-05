@@ -15,6 +15,8 @@ checkmark = u'\u2713'
 crossmark = u'\u2715'
 max_video_resolution_p = 720
 DEBUG = True
+DOWNLOAD_RETRIES = 3
+last_temp_message_length = 0
 
 def log( message ):
   if DEBUG:
@@ -106,11 +108,17 @@ def get_stream_files_infos():
   # execute and get process console output see https://stackoverflow.com/a/4760517
   command = ['youtube-dl', '-F', song['url']]
   log( ' '.join(command) )
-  yt_result = subprocess.run(command, stdout=subprocess.PIPE).stdout.decode('utf-8')
+  yt_result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  success = (yt_result.returncode == 0)
+  if success:
+    log( f"Ausgabe:\n{yt_result.stdout.decode('utf-8')}")
+  else:
+    log(f"kein Erfolg:\n{yt_result.returncode}\n{yt_result.stdout.decode('utf-8')}\n{yt_result.stderr.decode('utf-8')}")
+    return []
 
   stream_files = []
   relevant = False
-  for line in yt_result.split("\n"):
+  for line in yt_result.stdout.decode('utf-8').strip().split("\n"):
     if not relevant and line.startswith("format code"):
       # indicate next line contains infos
       relevant = True
@@ -168,6 +176,16 @@ def get_background_video( stream_files ):
   else:
     return {}
 
+# print line on console that will be overwritten by next print
+def print_temporary( message ):
+  global last_temp_message_length
+  # Note: any negative multiplier will result in empty string
+  spaces_to_cover_last_line = " " * ( last_temp_message_length - len(message) )
+  # output to be overwritten, see https://stackoverflow.com/a/51339999
+  print(f"{message}{spaces_to_cover_last_line}", end='\r')
+  last_temp_message_length = len(message)
+
+
 #########################################################
 ## MAIN
 #########################################################
@@ -181,14 +199,14 @@ for song in songs:
   log( f"{song['name']}" )
   counter += 1
   # get filelist from video stream
-  print(f". {counter}/{len(songs)} {song['name']}: lade Video-Dateiliste")
+  print_temporary(f". {counter}/{len(songs)} {song['name']}: lade Video-Dateiliste")
   stream_files = get_stream_files_infos()
   if len(stream_files) == 0:
     print(f"{crossmark} {counter}/{len(songs)} {song['name']}: keine Video-Dateien gefunden")
     continue
 
   # check which files to download from all file infos
-  print(f". {counter}/{len(songs)} {song['name']}: suche optimale Videos")
+  print_temporary(f". {counter}/{len(songs)} {song['name']}: suche optimale Videos")
   video_file_4_audio = get_audio_video( stream_files )
   if len(video_file_4_audio) == 0:
     print(f"{crossmark} {counter}/{len(songs)} {song['name']}: keine Video für Audio-Extraktion geeignet")
@@ -210,7 +228,7 @@ for song in songs:
 
   # download videos
   outfile_video_for_audio = f"{song['name']} {video_file_4_audio['p']}p.{video_file_4_audio['extension']}"
-  print(f". {counter}/{len(songs)} {song['name']}: lade {outfile_video_for_audio}")
+  print_temporary(f". {counter}/{len(songs)} {song['name']}: lade '{outfile_video_for_audio}'")
   # just execute dont capture output see https://stackoverflow.com/a/12503246
   command = ['youtube-dl',
              # select file to download
@@ -225,24 +243,28 @@ for song in songs:
   #subprocess.run(command, stdout=subprocess.DEVNULL)
   retry_count = 0
   success = 0
-  while retry_count < 3 and not success:
+  while retry_count < DOWNLOAD_RETRIES and not success:
     if retry_count > 0:
-      print(f". {counter}/{len(songs)} {song['name']}: {retry_count+1}. Versuch: lade {outfile_video_for_audio}")
+      print_temporary(f". {counter}/{len(songs)} {song['name']}: {retry_count+1}. Versuch: lade '{outfile_video_for_audio}'")
+      log(f"retrying {retry_count}/{DOWNLOAD_RETRIES} ...")
     # catch stdout and stderr see https://csatlas.com/python-subprocess-run-stdout-stderr/
     yt_result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     success = (yt_result.returncode == 0)
     if not success:
-      log(f"retrying\n{yt_result.returncode}\n{yt_result.stdout.decode()}\n{yt_result.stderr.decode()}")
+      log(f"Error:\n{yt_result.returncode}\n{yt_result.stdout.decode('utf-8')}\n{yt_result.stderr.decode('utf-8')}")
       retry_count += 1
   if not success:
     print(f"{crossmark} {counter}/{len(songs)} {song['name']}: kein Erfolg nach {retry_count} Versuchen -> überspringe Song")
     log(f"kein Erfolg nach {retry_count} Versuchen -> überspringe Song")
     # TODO: remove song['output directory']
     continue
+  else:
+    # Note: stdout contains overwrites of same line (= multiple lines separated by \r)
+    log( yt_result.stdout.decode('utf-8').strip().split("\r")[-1].strip() )
 
   outfile_video_for_bg = f"{song['name']} {video_file_4_bg['p']}p.{video_file_4_bg['extension']}"
   if video_file_4_audio != video_file_4_bg:
-    print(f". {counter}/{len(songs)} {song['name']}: lade {outfile_video_for_bg}")
+    print_temporary(f". {counter}/{len(songs)} {song['name']}: lade '{outfile_video_for_bg}'")
     # just execute dont capture output see https://stackoverflow.com/a/12503246
     command = ['youtube-dl',
                # select file to download
@@ -257,25 +279,29 @@ for song in songs:
     #subprocess.run(command, stdout=subprocess.DEVNULL)
     retry_count = 0
     success = 0
-    while retry_count < 3 and not success:
+    while retry_count < DOWNLOAD_RETRIES and not success:
       if retry_count > 0:
-        print(f". {counter}/{len(songs)} {song['name']}: {retry_count+1}. Versuch: lade {outfile_video_for_audio}")
+        print_temporary(f". {counter}/{len(songs)} {song['name']}: {retry_count+1}. Versuch: lade '{outfile_video_for_audio}'")
+        log(f"retrying {retry_count}/{DOWNLOAD_RETRIES} ...")
       # catch stdout and stderr see https://csatlas.com/python-subprocess-run-stdout-stderr/
       yt_result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
       success = (yt_result.returncode == 0)
       if not success:
-        print(f". {counter}/{len(songs)} {song['name']}: kein Erfolg nach {retry_count} Versuchen -> überspringe Song")
-        log(f"retrying\n{yt_result.returncode}\n{yt_result.stdout.decode()}\n{yt_result.stderr.decode()}")
+        print_temporary(f". {counter}/{len(songs)} {song['name']}: kein Erfolg nach {retry_count} Versuchen -> überspringe Song")
+        log(f"Error:\n{yt_result.returncode}\n{yt_result.stdout.decode()}\n{yt_result.stderr.decode()}")
         retry_count += 1
     if not success:
       print(f"{crossmark} {counter}/{len(songs)} {song['name']}: kein Erfolg nach {retry_count} Versuchen -> überspringe Song")
       log(f"kein Erfolg nach {retry_count} Versuchen -> überspringe Song")
       # TODO: remove song['output directory']
       continue
+    else:
+      # Note: stdout contains overwrites of same line (= multiple lines separated by \r)
+      log( yt_result.stdout.decode('utf-8').strip().split("\r")[-1].strip() )
 
   # extract mp3 file
   outfile_mp3 = f"{song['name']}.mp3"
-  print(f". {counter}/{len(songs)} {song['name']}: extrahiere mp3")
+  print_temporary(f". {counter}/{len(songs)} {song['name']}: extrahiere mp3")
   command = ['ffmpeg', '-i', os.path.join(song['output directory'], outfile_video_for_audio), '-c:v', 'copy', '-c:a', 'libmp3lame', '-q:a', '4', os.path.join(song['output directory'], outfile_mp3)]
   log( ' '.join(command) )
   # Note: ffmpeg seems to write out on stderror, so surpress stdout and stderr
@@ -283,7 +309,7 @@ for song in songs:
 
   # move files from source directory to song directory
   # rename / moving files, see https://stackoverflow.com/a/8858026
-  print(f". {counter}/{len(songs)} {song['name']}: kopiere Ausgangsdateien")
+  print_temporary(f". {counter}/{len(songs)} {song['name']}: kopiere Ausgangsdateien")
   
   outfile_original_txt = re.sub(r"\.txt$", ".ori", os.path.basename(song['files']['txt']), 1)
   os.rename( song['files']['txt'], os.path.join(song['output directory'], outfile_original_txt) )
@@ -299,7 +325,7 @@ for song in songs:
   os.rename( song['files']['url'], os.path.join(song['output directory'], outfile_url) )
 
   # TODO: re-create .txt file by updating #VIDEO, #MP3 and #COVER in .txt file
-  print(f". {counter}/{len(songs)} {song['name']}: schreibe .txt Datei neu")
+  print_temporary(f". {counter}/{len(songs)} {song['name']}: schreibe .txt Datei neu")
   ori_txt_content = []
   with open(os.path.join(song['output directory'], outfile_original_txt), "r") as f:
     ori_txt_content = [l.rstrip() for l in f.readlines()]
