@@ -3,6 +3,7 @@ import os
 import glob 
 import urllib.parse
 import subprocess
+import locale
 import re
 from datetime import datetime
 
@@ -22,7 +23,7 @@ last_temp_message_length = 0
 
 def log( message ):
   if DEBUG:
-    with open( re.sub(r"\.py$", ".log", sys.argv[0], 1), "a" ) as f:
+    with open( re.sub(r"\.py$", ".log", sys.argv[0], 1), mode="a", encoding="utf-8" ) as f:
       f.write(f"[{datetime.now().strftime('%d.%m.%Y %H:%M:%S')}] {message}\n")
 
 def error_out( message ):
@@ -44,7 +45,7 @@ def parse_args():
   }
 
 def get_url( urlfile ):
-  with open( urlfile ) as f:
+  with open( urlfile, mode="r", encoding="utf-8" ) as f:
     lines = [line.strip() for line in f.readlines()]
   for line in lines:
     if line.startswith("URL"):
@@ -105,11 +106,13 @@ def get_yt_download_files( youtube_url ):
   yt_result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   success = (yt_result.returncode == 0)
   if success:
-    result = yt_result.stdout.decode()
+    # Note: youtube-dl returns in locale encoding (Windows: 'cp1252')
+    result = yt_result.stdout.decode(locale.getencoding())
     log( f"Ausgabe:\n{result}")
     return result
   else:
-    log(f"kein Erfolg:\n{yt_result.returncode}\n{yt_result.stdout.decode()}\n{yt_result.stderr.decode()}")
+    # Note: youtube-dl returns in locale encoding (Windows: 'cp1252')
+    log(f"kein Erfolg:\n{yt_result.returncode}\n{yt_result.stdout.decode(locale.getencoding())}\n{yt_result.stderr.decode(locale.getencoding())}")
     return ""
 
 def parse_yt_file_info( yt_file_line ):
@@ -200,6 +203,7 @@ def print_temporary( message ):
 #########################################################
 ## MAIN
 #########################################################
+log( f"running {sys.argv[0]} in Version {VERSION}")
 options = parse_args()
 songs = get_valid_song_list( options['source dir'] )
 
@@ -264,7 +268,8 @@ for song in songs:
     yt_result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     success = (yt_result.returncode == 0)
     if not success:
-      log(f"Error:\n{yt_result.returncode}\n{yt_result.stdout.decode()}\n{yt_result.stderr.decode()}")
+      # Note: youtube-dl returns in locale encoding (Windows: 'cp1252')
+      log(f"Error:\n{yt_result.returncode}\n{yt_result.stdout.decode(locale.getencoding())}\n{yt_result.stderr.decode(locale.getencoding())}")
       retry_count += 1
   if not success:
     print(f"{crossmark} {counter}/{len(songs)} {song['name']}: kein Erfolg nach {retry_count} Versuchen -> überspringe Song")
@@ -273,7 +278,8 @@ for song in songs:
     continue
   else:
     # Note: stdout contains overwrites of same line (= multiple lines separated by \r)
-    log( yt_result.stdout.decode().strip().split("\r")[-1].strip() )
+    # Note: youtube-dl returns in locale encoding (Windows: 'cp1252')
+    log( yt_result.stdout.decode(locale.getencoding()).strip().split("\r")[-1].strip() )
 
   outfile_video_for_bg = f"{song['name']} {video_file_4_bg['p']}p.{video_file_4_bg['extension']}"
   if video_file_4_audio != video_file_4_bg:
@@ -301,7 +307,8 @@ for song in songs:
       success = (yt_result.returncode == 0)
       if not success:
         print_temporary(f". {counter}/{len(songs)} {song['name']}: kein Erfolg nach {retry_count} Versuchen -> überspringe Song")
-        log(f"Error:\n{yt_result.returncode}\n{yt_result.stdout.decode()}\n{yt_result.stderr.decode()}")
+        # Note: youtube-dl returns in locale encoding (Windows: 'cp1252')
+        log(f"Error:\n{yt_result.returncode}\n{yt_result.stdout.decode(locale.getencoding())}\n{yt_result.stderr.decode(locale.getencoding())}")
         retry_count += 1
     if not success:
       print(f"{crossmark} {counter}/{len(songs)} {song['name']}: kein Erfolg nach {retry_count} Versuchen -> überspringe Song")
@@ -310,7 +317,8 @@ for song in songs:
       continue
     else:
       # Note: stdout contains overwrites of same line (= multiple lines separated by \r)
-      log( yt_result.stdout.decode().strip().split("\r")[-1].strip() )
+      # Note: youtube-dl returns in locale encoding (Windows: 'cp1252')
+      log( yt_result.stdout.decode(locale.getencoding()).strip().split("\r")[-1].strip() )
 
   # extract mp3 file
   outfile_mp3 = f"{song['name']}.mp3"
@@ -337,11 +345,26 @@ for song in songs:
   outfile_url = os.path.basename(song['files']['url'])
   os.rename( song['files']['url'], os.path.join(song['output directory'], outfile_url) )
 
-  # TODO: re-create .txt file by updating #VIDEO, #MP3 and #COVER in .txt file
+  # re-create .txt file by updating #VIDEO, #MP3 and #COVER in .txt file
   print_temporary(f". {counter}/{len(songs)} {song['name']}: schreibe .txt Datei neu")
   ori_txt_content = []
-  with open(os.path.join(song['output directory'], outfile_original_txt), "r") as f:
-    ori_txt_content = [l.rstrip() for l in f.readlines()]
+  possible_input_encodings = ["utf-8", "cp1252", "latin1"]
+  ori_text_read_success = False
+  for enc in possible_input_encodings:
+    log(enc)
+    try:
+      with open(os.path.join(song['output directory'], outfile_original_txt), mode="r", encoding=enc) as f:
+        ori_txt_content = [l.rstrip() for l in f.readlines()]
+      # take this result
+      ori_text_read_success = True
+      log( f"original txt encoding was '{enc}'")
+      break
+    except UnicodeDecodeError as e:
+      log( e ) # and try next encoding
+  if not ori_text_read_success:
+    print(f"{crossmark} {counter}/{len(songs)} {song['name']}: konnte Encoding der txt Datei nicht lesen")
+    log(f"could not read encoding")
+    continue
 
   new_txt_content = []
   for line in ori_txt_content:
@@ -357,7 +380,7 @@ for song in songs:
       new_txt_content.append(line)
 
   outfile_txt = f"{song['name']}.txt"
-  with open(os.path.join(song['output directory'], outfile_txt), "w") as f:
+  with open(os.path.join(song['output directory'], outfile_txt), mode="w", encoding="utf-8") as f:
     f.write("\n".join(new_txt_content)) # f.write will automatically convert "\n" to OS Line-Separator
 
   print(f"{checkmark} {counter}/{len(songs)} {song['name']}")
