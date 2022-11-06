@@ -6,6 +6,8 @@ import subprocess
 import re
 from datetime import datetime
 
+VERSION = "0.1.0"
+
 allowed_video_domains = [
   "youtube.com",
   "youtu.be"
