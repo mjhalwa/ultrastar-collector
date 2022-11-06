@@ -106,21 +106,21 @@ def get_stream_files_infos():
   #     yt_result = ''.join(f.readlines())
   # else:
   #   # execute and get process console output see https://stackoverflow.com/a/4760517
-  #   yt_result = subprocess.run(['youtube-dl', '-F', song['url']], stdout=subprocess.PIPE).stdout.decode('utf-8')
+  #   yt_result = subprocess.run(['youtube-dl', '-F', song['url']], stdout=subprocess.PIPE).stdout.decode()
   # execute and get process console output see https://stackoverflow.com/a/4760517
   command = ['youtube-dl', '-F', song['url']]
   log( ' '.join(command) )
   yt_result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   success = (yt_result.returncode == 0)
   if success:
-    log( f"Ausgabe:\n{yt_result.stdout.decode('utf-8')}")
+    log( f"Ausgabe:\n{yt_result.stdout.decode()}")
   else:
-    log(f"kein Erfolg:\n{yt_result.returncode}\n{yt_result.stdout.decode('utf-8')}\n{yt_result.stderr.decode('utf-8')}")
+    log(f"kein Erfolg:\n{yt_result.returncode}\n{yt_result.stdout.decode()}\n{yt_result.stderr.decode()}")
     return []
 
   stream_files = []
   relevant = False
-  for line in yt_result.stdout.decode('utf-8').strip().split("\n"):
+  for line in yt_result.stdout.decode().strip().split("\n"):
     if not relevant and line.startswith("format code"):
       # indicate next line contains infos
       relevant = True
@@ -253,7 +253,7 @@ for song in songs:
     yt_result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     success = (yt_result.returncode == 0)
     if not success:
-      log(f"Error:\n{yt_result.returncode}\n{yt_result.stdout.decode('utf-8')}\n{yt_result.stderr.decode('utf-8')}")
+      log(f"Error:\n{yt_result.returncode}\n{yt_result.stdout.decode()}\n{yt_result.stderr.decode()}")
       retry_count += 1
   if not success:
     print(f"{crossmark} {counter}/{len(songs)} {song['name']}: kein Erfolg nach {retry_count} Versuchen -> überspringe Song")
@@ -262,7 +262,7 @@ for song in songs:
     continue
   else:
     # Note: stdout contains overwrites of same line (= multiple lines separated by \r)
-    log( yt_result.stdout.decode('utf-8').strip().split("\r")[-1].strip() )
+    log( yt_result.stdout.decode().strip().split("\r")[-1].strip() )
 
   outfile_video_for_bg = f"{song['name']} {video_file_4_bg['p']}p.{video_file_4_bg['extension']}"
   if video_file_4_audio != video_file_4_bg:
@@ -299,7 +299,7 @@ for song in songs:
       continue
     else:
       # Note: stdout contains overwrites of same line (= multiple lines separated by \r)
-      log( yt_result.stdout.decode('utf-8').strip().split("\r")[-1].strip() )
+      log( yt_result.stdout.decode().strip().split("\r")[-1].strip() )
 
   # extract mp3 file
   outfile_mp3 = f"{song['name']}.mp3"
