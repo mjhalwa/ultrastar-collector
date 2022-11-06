@@ -99,28 +99,54 @@ def get_valid_song_list( source_directory ):
 
   return songs
 
-def get_stream_files_infos():
-  # # TODO: remove this contion block and keep ELSE when finishing DEBUGGING
-  # if DEBUG:
-  #   with open("./examples/yt-download-zoomania-files.out") as f:
-  #     yt_result = ''.join(f.readlines())
-  # else:
-  #   # execute and get process console output see https://stackoverflow.com/a/4760517
-  #   yt_result = subprocess.run(['youtube-dl', '-F', song['url']], stdout=subprocess.PIPE).stdout.decode()
-  # execute and get process console output see https://stackoverflow.com/a/4760517
-  command = ['youtube-dl', '-F', song['url']]
+def get_yt_download_files( youtube_url ):
+  command = ['youtube-dl', '-F', youtube_url]
   log( ' '.join(command) )
   yt_result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   success = (yt_result.returncode == 0)
   if success:
-    log( f"Ausgabe:\n{yt_result.stdout.decode()}")
+    result = yt_result.stdout.decode()
+    log( f"Ausgabe:\n{result}")
+    return result
   else:
     log(f"kein Erfolg:\n{yt_result.returncode}\n{yt_result.stdout.decode()}\n{yt_result.stderr.decode()}")
-    return []
+    return ""
 
+def parse_yt_file_info( yt_file_line ):
+  original_line = yt_file_line.strip()
+  match_result = re.search(r"^(\d+) *([0-9a-zA-Z]+) *(\d+x\d+|audio only) *(\d+p|tiny|DASH audio|DASH video) *(\d+k) , (.*)$", original_line)
+  if match_result == None:
+    return {}
+  matches = match_result.groups()
+
+  pixels = 0
+  if (matches[3] == "tiny" or matches[3] == "DASH audio"):
+    pixels = 0
+  elif matches[3] == "DASH video":
+    pixels = int(matches[2].split("x")[1])
+  else:
+    pixels = int(matches[3].rstrip("p"))
+
+  return {
+    "original": original_line,
+    "format code": matches[0],
+    "extension": matches[1],
+    "resolution": "0x0" if matches[2] == "audio only" else matches[2],
+    "p": pixels,
+    "k": int(matches[4].rstrip("k")),
+    "note": matches[5],
+    "best": matches[5].find("(best)") >= 0,
+    "video only": matches[5].find("video only") >= 0,
+    "DASH": ("DASH" in matches[3]),   # see https://de.wikipedia.org/wiki/Dynamic_Adaptive_Streaming_over_HTTP
+  }
+
+def convert_yt_files_to_info_list( yt_files_result ):
   stream_files = []
   relevant = False
-  for line in yt_result.stdout.decode().strip().split("\n"):
+  for line in yt_files_result.strip().split("\n"):
+    if line == '':
+      # skip empty lines
+      continue
     if not relevant and line.startswith("format code"):
       # indicate next line contains infos
       relevant = True
@@ -128,33 +154,16 @@ def get_stream_files_infos():
     elif relevant == False:
       # skip intro lines
       continue
-    
-    # skip empty lines
-    if line == '':
-      continue
-
-    match_result = re.search(r"^(\d+) *([0-9a-zA-Z]+) *(\d+x\d+|audio only) *(\d+p|tiny) *(\d+k) , (.*)$", line.strip())
-    if match_result == None:
+    info = parse_yt_file_info(line)
+    if len(info) == 0:
       log(f"ERROR: could not match line: '{line.strip()}'")
       continue
-    matches = match_result.groups()
-    info = {
-      "format code": matches[0],
-      "extension": matches[1],
-      "resolution": "0x0" if matches[2] == "audio only" else matches[2],
-      "p": 0 if matches[3] == "tiny" else int(matches[3].rstrip("p")),
-      "k": int(matches[4].rstrip("k")),
-      "note": matches[5],
-      "best": matches[5].find("(best)") >= 0,
-      "video only": matches[5].find("video only") >= 0
-    }
     stream_files.append(info)
-
   return stream_files
 
-def get_audio_video( stream_files ):
+def select_audio_video( stream_files ):
   # filter for resolution and mp4 files
-  filtered_list = [ f for f in stream_files if (f["p"] <= max_video_resolution_p and f["extension"] == "mp4" and not f["video only"]) ]
+  filtered_list = [ f for f in stream_files if (f["p"] <= max_video_resolution_p and f["extension"] == "mp4" and not f["video only"] and not f["DASH"]) ]
 
   # sort first for best, then for max resolution and finally for max bitrate (all highest value first)
   # Note: for sorting multiple values see https://stackoverflow.com/a/20145873
@@ -165,9 +174,9 @@ def get_audio_video( stream_files ):
   else:
     return {}
 
-def get_background_video( stream_files ):
+def select_background_video( stream_files ):
   # filter for resolution and mp4 files
-  filtered_list = [ f for f in stream_files if (f["p"] <= max_video_resolution_p and f["extension"] == "mp4") ]
+  filtered_list = [ f for f in stream_files if (f["p"] <= max_video_resolution_p and f["extension"] == "mp4" and not f["DASH"]) ]
 
   # sort first for max resolution and then for max bitrate (all highest value first)
   filtered_list.sort(key = lambda f: (f["p"], f["k"]), reverse=True)
@@ -202,20 +211,22 @@ for song in songs:
   counter += 1
   # get filelist from video stream
   print_temporary(f". {counter}/{len(songs)} {song['name']}: lade Video-Dateiliste")
-  stream_files = get_stream_files_infos()
+
+  yt_files_result = get_yt_download_files( song['url'] )
+  stream_files = convert_yt_files_to_info_list( yt_files_result )
   if len(stream_files) == 0:
     print(f"{crossmark} {counter}/{len(songs)} {song['name']}: keine Video-Dateien gefunden")
     continue
 
   # check which files to download from all file infos
   print_temporary(f". {counter}/{len(songs)} {song['name']}: suche optimale Videos")
-  video_file_4_audio = get_audio_video( stream_files )
+  video_file_4_audio = select_audio_video( stream_files )
   if len(video_file_4_audio) == 0:
     print(f"{crossmark} {counter}/{len(songs)} {song['name']}: keine Video für Audio-Extraktion geeignet")
     continue
   log( f"chosen file for audio extraction:\n{video_file_4_audio}")
 
-  video_file_4_bg = get_background_video( stream_files )
+  video_file_4_bg = select_background_video( stream_files )
   if len(video_file_4_bg) == 0:
     print(f"{crossmark} {counter}/{len(songs)} {song['name']}: keine Video für den Hintergrund geeignet")
     continue

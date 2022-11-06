@@ -1,0 +1,15 @@
+[youtube] t1ab2S_8qIs: Downloading webpage
+[youtube] t1ab2S_8qIs: Downloading player 03bec62d
+[youtube] t1ab2S_8qIs: Downloading MPD manifest
+[info] Available formats for t1ab2S_8qIs:
+format code  extension  resolution note
+139          m4a        audio only DASH audio   48k , m4a_dash container, mp4a.40.5 (22050Hz), 1.11MiB
+251          webm       audio only tiny  122k , webm_dash container, opus @122k (48000Hz), 2.86MiB
+140          m4a        audio only tiny  127k , m4a_dash container, mp4a.40.2@127k (44100Hz), 2.96MiB
+278          webm       256x134    DASH video   95k , webm_dash container, vp9, 25fps, video only
+160          mp4        256x134    DASH video  108k , mp4_dash container, avc1.4d400b, 25fps, video only
+242          webm       426x224    DASH video  220k , webm_dash container, vp9, 25fps, video only
+133          mp4        426x224    DASH video  242k , mp4_dash container, avc1.4d400d, 25fps, video only
+243          webm       640x336    DASH video  405k , webm_dash container, vp9, 25fps, video only
+134          mp4        640x336    360p  571k , mp4_dash container, avc1.4d401e@ 571k, 25fps, video only, 13.31MiB
+18           mp4        640x336    360p  698k , avc1.42001E, 25fps, mp4a.40.2 (44100Hz) (best)
