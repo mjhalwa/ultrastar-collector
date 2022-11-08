@@ -49,7 +49,7 @@ def get_url( urlfile ):
     lines = [line.strip() for line in f.readlines()]
   for line in lines:
     if line.startswith("URL"):
-      return line.split("=")[1].strip()
+      return line.split("URL=")[1]
   return ''
 
 def get_valid_song_list( source_directory ):
@@ -166,7 +166,7 @@ def convert_yt_files_to_info_list( yt_files_result ):
 
 def select_audio_video( stream_files ):
   # filter for resolution and mp4 files
-  filtered_list = [ f for f in stream_files if (f["p"] <= max_video_resolution_p and f["extension"] == "mp4" and not f["video only"] and not f["DASH"]) ]
+  filtered_list = [ f for f in stream_files if (f["p"] <= max_video_resolution_p and f["extension"] == "mp4" and not f["video only"]) ]
 
   # sort first for best, then for max resolution and finally for max bitrate (all highest value first)
   # Note: for sorting multiple values see https://stackoverflow.com/a/20145873
@@ -179,7 +179,7 @@ def select_audio_video( stream_files ):
 
 def select_background_video( stream_files ):
   # filter for resolution and mp4 files
-  filtered_list = [ f for f in stream_files if (f["p"] <= max_video_resolution_p and f["extension"] == "mp4" and not f["DASH"]) ]
+  filtered_list = [ f for f in stream_files if (f["p"] <= max_video_resolution_p and f["extension"] == "mp4") ]
 
   # sort first for max resolution and then for max bitrate (all highest value first)
   filtered_list.sort(key = lambda f: (f["p"], f["k"]), reverse=True)
@@ -196,9 +196,24 @@ def print_temporary( message ):
   # Note: any negative multiplier will result in empty string
   spaces_to_cover_last_line = " " * ( last_temp_message_length - len(message) )
   # output to be overwritten, see https://stackoverflow.com/a/51339999
-  print(f"{message}{spaces_to_cover_last_line}", end='\r')
+  print(f". {message}{spaces_to_cover_last_line}", end='\r')
   last_temp_message_length = len(message)
 
+def print_fail( message ):
+  global last_temp_message_length
+  # Note: any negative multiplier will result in empty string
+  spaces_to_cover_last_line = " " * ( last_temp_message_length - len(message) )
+  # output to be overwritten, see https://stackoverflow.com/a/51339999
+  print(f"{crossmark} {message}{spaces_to_cover_last_line}")
+  last_temp_message_length = len(message)
+
+def print_success( message ):
+  global last_temp_message_length
+  # Note: any negative multiplier will result in empty string
+  spaces_to_cover_last_line = " " * ( last_temp_message_length - len(message) )
+  # output to be overwritten, see https://stackoverflow.com/a/51339999
+  print(f"{checkmark} {message}{spaces_to_cover_last_line}")
+  last_temp_message_length = len(message)
 
 #########################################################
 ## MAIN
@@ -214,38 +229,38 @@ for song in songs:
   log( f"{song['name']}" )
   counter += 1
   # get filelist from video stream
-  print_temporary(f". {counter}/{len(songs)} {song['name']}: lade Video-Dateiliste")
+  print_temporary(f"{counter}/{len(songs)} {song['name']}: lade Video-Dateiliste")
 
   yt_files_result = get_yt_download_files( song['url'] )
   stream_files = convert_yt_files_to_info_list( yt_files_result )
   if len(stream_files) == 0:
-    print(f"{crossmark} {counter}/{len(songs)} {song['name']}: keine Video-Dateien gefunden")
+    print_fail(f"{counter}/{len(songs)} {song['name']}: keine Video-Dateien gefunden")
     continue
 
   # check which files to download from all file infos
-  print_temporary(f". {counter}/{len(songs)} {song['name']}: suche optimale Videos")
+  print_temporary(f"{counter}/{len(songs)} {song['name']}: suche optimale Videos")
   video_file_4_audio = select_audio_video( stream_files )
   if len(video_file_4_audio) == 0:
-    print(f"{crossmark} {counter}/{len(songs)} {song['name']}: keine Video für Audio-Extraktion geeignet")
+    print_fail(f"{counter}/{len(songs)} {song['name']}: keine Video für Audio-Extraktion geeignet")
     continue
   log( f"chosen file for audio extraction:\n{video_file_4_audio}")
 
   video_file_4_bg = select_background_video( stream_files )
   if len(video_file_4_bg) == 0:
-    print(f"{crossmark} {counter}/{len(songs)} {song['name']}: keine Video für den Hintergrund geeignet")
+    print_fail(f"{counter}/{len(songs)} {song['name']}: keine Video für den Hintergrund geeignet")
     continue
   log( f"chosen file for background video:\n{video_file_4_bg}")
 
   # create song directory
   song['output directory'] = os.path.join(".", song['name'])
   if os.path.isdir(song['output directory']):
-    print(f"{crossmark} {counter}/{len(songs)} {song['name']}: Ausgabe-Verzeichnis existiert bereits")
+    print_fail(f"{counter}/{len(songs)} {song['name']}: Ausgabe-Verzeichnis existiert bereits")
     continue
   os.mkdir(song['output directory'])
 
   # download videos
   outfile_video_for_audio = f"{song['name']} {video_file_4_audio['p']}p.{video_file_4_audio['extension']}"
-  print_temporary(f". {counter}/{len(songs)} {song['name']}: lade '{outfile_video_for_audio}'")
+  print_temporary(f"{counter}/{len(songs)} {song['name']}: lade '{outfile_video_for_audio}'")
   # just execute dont capture output see https://stackoverflow.com/a/12503246
   command = ['youtube-dl',
              # select file to download
@@ -262,7 +277,7 @@ for song in songs:
   success = 0
   while retry_count < DOWNLOAD_RETRIES and not success:
     if retry_count > 0:
-      print_temporary(f". {counter}/{len(songs)} {song['name']}: {retry_count+1}. Versuch: lade '{outfile_video_for_audio}'")
+      print_temporary(f"{counter}/{len(songs)} {song['name']}: {retry_count+1}. Versuch: lade '{outfile_video_for_audio}'")
       log(f"retrying {retry_count}/{DOWNLOAD_RETRIES} ...")
     # catch stdout and stderr see https://csatlas.com/python-subprocess-run-stdout-stderr/
     yt_result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -272,7 +287,7 @@ for song in songs:
       log(f"Error:\n{yt_result.returncode}\n{yt_result.stdout.decode(locale.getencoding())}\n{yt_result.stderr.decode(locale.getencoding())}")
       retry_count += 1
   if not success:
-    print(f"{crossmark} {counter}/{len(songs)} {song['name']}: kein Erfolg nach {retry_count} Versuchen -> überspringe Song")
+    print_fail(f"{counter}/{len(songs)} {song['name']}: kein Erfolg nach {retry_count} Versuchen -> überspringe Song")
     log(f"kein Erfolg nach {retry_count} Versuchen -> überspringe Song")
     # TODO: remove song['output directory']
     continue
@@ -283,7 +298,7 @@ for song in songs:
 
   outfile_video_for_bg = f"{song['name']} {video_file_4_bg['p']}p.{video_file_4_bg['extension']}"
   if video_file_4_audio != video_file_4_bg:
-    print_temporary(f". {counter}/{len(songs)} {song['name']}: lade '{outfile_video_for_bg}'")
+    print_temporary(f"{counter}/{len(songs)} {song['name']}: lade '{outfile_video_for_bg}'")
     # just execute dont capture output see https://stackoverflow.com/a/12503246
     command = ['youtube-dl',
                # select file to download
@@ -300,18 +315,18 @@ for song in songs:
     success = 0
     while retry_count < DOWNLOAD_RETRIES and not success:
       if retry_count > 0:
-        print_temporary(f". {counter}/{len(songs)} {song['name']}: {retry_count+1}. Versuch: lade '{outfile_video_for_audio}'")
+        print_temporary(f"{counter}/{len(songs)} {song['name']}: {retry_count+1}. Versuch: lade '{outfile_video_for_audio}'")
         log(f"retrying {retry_count}/{DOWNLOAD_RETRIES} ...")
       # catch stdout and stderr see https://csatlas.com/python-subprocess-run-stdout-stderr/
       yt_result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
       success = (yt_result.returncode == 0)
       if not success:
-        print_temporary(f". {counter}/{len(songs)} {song['name']}: kein Erfolg nach {retry_count} Versuchen -> überspringe Song")
+        print_temporary(f"{counter}/{len(songs)} {song['name']}: kein Erfolg nach {retry_count} Versuchen -> überspringe Song")
         # Note: youtube-dl returns in locale encoding (Windows: 'cp1252')
         log(f"Error:\n{yt_result.returncode}\n{yt_result.stdout.decode(locale.getencoding())}\n{yt_result.stderr.decode(locale.getencoding())}")
         retry_count += 1
     if not success:
-      print(f"{crossmark} {counter}/{len(songs)} {song['name']}: kein Erfolg nach {retry_count} Versuchen -> überspringe Song")
+      print_fail(f"{counter}/{len(songs)} {song['name']}: kein Erfolg nach {retry_count} Versuchen -> überspringe Song")
       log(f"kein Erfolg nach {retry_count} Versuchen -> überspringe Song")
       # TODO: remove song['output directory']
       continue
@@ -322,7 +337,7 @@ for song in songs:
 
   # extract mp3 file
   outfile_mp3 = f"{song['name']}.mp3"
-  print_temporary(f". {counter}/{len(songs)} {song['name']}: extrahiere mp3")
+  print_temporary(f"{counter}/{len(songs)} {song['name']}: extrahiere mp3")
   command = ['ffmpeg', '-i', os.path.join(song['output directory'], outfile_video_for_audio), '-c:v', 'copy', '-c:a', 'libmp3lame', '-q:a', '4', os.path.join(song['output directory'], outfile_mp3)]
   log( ' '.join(command) )
   # Note: ffmpeg seems to write out on stderror, so surpress stdout and stderr
@@ -330,7 +345,7 @@ for song in songs:
 
   # move files from source directory to song directory
   # rename / moving files, see https://stackoverflow.com/a/8858026
-  print_temporary(f". {counter}/{len(songs)} {song['name']}: kopiere Ausgangsdateien")
+  print_temporary(f"{counter}/{len(songs)} {song['name']}: kopiere Ausgangsdateien")
   
   outfile_original_txt = re.sub(r"\.txt$", ".ori", os.path.basename(song['files']['txt']), 1)
   os.rename( song['files']['txt'], os.path.join(song['output directory'], outfile_original_txt) )
@@ -346,7 +361,7 @@ for song in songs:
   os.rename( song['files']['url'], os.path.join(song['output directory'], outfile_url) )
 
   # re-create .txt file by updating #VIDEO, #MP3 and #COVER in .txt file
-  print_temporary(f". {counter}/{len(songs)} {song['name']}: schreibe .txt Datei neu")
+  print_temporary(f"{counter}/{len(songs)} {song['name']}: schreibe .txt Datei neu")
   ori_txt_content = []
   possible_input_encodings = ["utf-8", "cp1252", "latin1"]
   ori_text_read_success = False
@@ -362,7 +377,7 @@ for song in songs:
     except UnicodeDecodeError as e:
       log( e ) # and try next encoding
   if not ori_text_read_success:
-    print(f"{crossmark} {counter}/{len(songs)} {song['name']}: konnte Encoding der txt Datei nicht lesen")
+    print_fail(f"{counter}/{len(songs)} {song['name']}: konnte Encoding der txt Datei nicht lesen")
     log(f"could not read encoding")
     continue
 
@@ -372,9 +387,12 @@ for song in songs:
       new_txt_content.append(f"#MP3:{outfile_mp3}")
       new_txt_content.append(f"#COVER:{outfile_cover}")
       new_txt_content.append(f"#VIDEO:{outfile_video_for_bg}")
+    # remove lines containing the following Tags
     elif line.startswith("#COVER"):
       continue
     elif line.startswith("#VIDEO"):
+      continue
+    elif line.startswith("#VIDEOGAP"):
       continue
     else:
       new_txt_content.append(line)
@@ -383,7 +401,7 @@ for song in songs:
   with open(os.path.join(song['output directory'], outfile_txt), mode="w", encoding="utf-8") as f:
     f.write("\n".join(new_txt_content)) # f.write will automatically convert "\n" to OS Line-Separator
 
-  print(f"{checkmark} {counter}/{len(songs)} {song['name']}")
+  print_success(f"{counter}/{len(songs)} {song['name']}")
 
 print("fertig")
 log("fertig")
