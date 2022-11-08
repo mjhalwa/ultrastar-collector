@@ -1,0 +1,21 @@
+[youtube] S4svnVHOL9k: Downloading webpage
+[youtube] S4svnVHOL9k: Downloading player c4225c42
+[youtube] S4svnVHOL9k: Downloading MPD manifest
+[info] Available formats for S4svnVHOL9k:
+format code  extension  resolution note
+139          m4a        audio only DASH audio   50k , m4a_dash container, mp4a.40.5 (22050Hz), 1.26MiB
+251          webm       audio only tiny  125k , webm_dash container, opus @125k (48000Hz), 3.24MiB
+140          m4a        audio only tiny  129k , m4a_dash container, mp4a.40.2@129k (44100Hz), 3.34MiB
+278          webm       256x110    DASH video   95k , webm_dash container, vp9, 25fps, video only
+160          mp4        256x110    DASH video  108k , mp4_dash container, avc1.4d400b, 25fps, video only
+242          webm       426x182    DASH video  220k , webm_dash container, vp9, 25fps, video only
+133          mp4        426x182    DASH video  242k , mp4_dash container, avc1.4d400c, 25fps, video only
+243          webm       640x272    DASH video  405k , webm_dash container, vp9, 25fps, video only
+134          mp4        640x272    360p  406k , mp4_dash container, avc1.4d4015@ 406k, 25fps, video only, 10.49MiB
+244          webm       854x364    DASH video  752k , webm_dash container, vp9, 25fps, video only
+135          mp4        854x364    DASH video 1155k , mp4_dash container, avc1.4d4014, 25fps, video only
+247          webm       1280x546   DASH video 1505k , webm_dash container, vp9, 25fps, video only
+136          mp4        1280x546   DASH video 2310k , mp4_dash container, avc1.4d4016, 25fps, video only
+248          webm       1920x818   DASH video 2646k , webm_dash container, vp9, 25fps, video only
+137          mp4        1920x818   DASH video 4331k , mp4_dash container, avc1.64001e, 25fps, video only
+18           mp4        640x272    360p  516k , avc1.42001E, 25fps, mp4a.40.2 (44100Hz), 13.34MiB (best)
