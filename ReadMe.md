@@ -42,3 +42,5 @@ python ultrastar-collector.py ./test
 - `Disney's Zoomania (Shakira) - Try Everything`: short Youtube-URL
 - `Die Prinzen - Alles Nur Geklaut`: keine besseren aber `DASH video`s und Text mit fehlenden Spaces zwischen den Wörtern
 - `Fall Out Boy - My Songs Know What You Did in The Dark (Light 'Em Up)`: Langer Songtitel bzw. langer Dateiname und in der Folge auch Verzeichnisname
+- `DuckTales`: bestes Video hat 720p und 3k Bitrate, Auswahl kollidiert mit Video ohne Audio mit 720p und 1164k Bitrate. Da die Videodatei nach `720p` benannt wird, könnte der Download der Background-Video-Datei (ohne Audio) Die Datei mit Audio überschreiben
+- `Hakuna Matata`: DOMAIN `www.youtube.com`
