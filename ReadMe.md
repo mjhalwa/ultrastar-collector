@@ -44,3 +44,21 @@ python ultrastar-collector.py ./test
 - `Fall Out Boy - My Songs Know What You Did in The Dark (Light 'Em Up)`: Langer Songtitel bzw. langer Dateiname und in der Folge auch Verzeichnisname
 - `DuckTales`: bestes Video hat 720p und 3k Bitrate, Auswahl kollidiert mit Video ohne Audio mit 720p und 1164k Bitrate. Da die Videodatei nach `720p` benannt wird, könnte der Download der Background-Video-Datei (ohne Audio) Die Datei mit Audio überschreiben
 - `Hakuna Matata`: DOMAIN `www.youtube.com`
+
+## Lautstärke anpassen
+
+3 Methoden:
+
+- Maximum auf 0dB setzen ->  nicht nützlich, da Amplituden höherer Frequenzen als lauter empfunden werden als Amplituden niedriger Frequenzen (außerdem mag man kurze laute Passagen akzeptieren)
+- Loudnorm -> simple Normalisierung der Lautstärke an Hand von Methode R128 (siehe Quellen)
+- Loudness Korrektur mit Messung und anschließender Anpassung -> benötigt 2 Durchläufe und parsen der Ausgbewerte im 1. Durchlauf
+
+Aktuelles Ergebnis:
+
+- Doppelter Durchlauf scheint keine Veränderung zu bringen -> evt. werden die Parameter falsch angewandt?
+- Einfacher Durchlauf bringt bereits ein optimales Ergebnis
+
+Quellen:
+
+- [ffmpeg - AudioVolume](https://trac.ffmpeg.org/wiki/AudioVolume)
+- [peterforgacs](http://peterforgacs.github.io/2018/05/20/Audio-normalization-with-ffmpeg/)
