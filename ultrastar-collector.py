@@ -11,7 +11,9 @@ VERSION = "0.1.3-post"
 
 allowed_video_domains = [
   "youtube.com",
-  "youtu.be"
+  "www.youtube.com",
+  "youtu.be",
+  "www.youtu.be"
 ]
 
 checkmark = u'\u2713'
@@ -63,7 +65,7 @@ def get_valid_song_list( source_directory ):
     files['txt'] = filepath
 
     # get filename and remove file extension
-    song['name'] = '.'.join(filepath.split(os.sep)[-1].split(".")[0:-1])
+    song['name'] = re.sub(r"\.[^.]+$", "", filepath.split(os.sep)[-1])
 
     # check (required) existance of Video Weblink
     url_file = os.path.join(source_directory, f"{song['name']}.url")
@@ -343,6 +345,14 @@ for song in songs:
   # Note: ffmpeg seems to write out on stderror, so surpress stdout and stderr
   subprocess.run(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
+  # normalize loudness of mp3 file
+  outfile_mp3_normalized = f"{song['name']} - normalized.mp3"
+  print_temporary(f"{counter}/{len(songs)} {song['name']}: normalisiere Lautstärke der mp3")
+  command = ['ffmpeg', '-i', os.path.join(song['output directory'], outfile_mp3), '-filter:a', 'loudnorm', os.path.join(song['output directory'], outfile_mp3_normalized)]
+  log( ' '.join(command) )
+  # Note: ffmpeg seems to write out on stderror, so surpress stdout and stderr
+  subprocess.run(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
   # move files from source directory to song directory
   # rename / moving files, see https://stackoverflow.com/a/8858026
   print_temporary(f"{counter}/{len(songs)} {song['name']}: kopiere Ausgangsdateien")
@@ -384,15 +394,21 @@ for song in songs:
   new_txt_content = []
   for line in ori_txt_content:
     if line.startswith("#MP3"):
-      new_txt_content.append(f"#MP3:{outfile_mp3}")
+      new_txt_content.append(f"#ARTIST:{song['name'].split(' - ')[0]}")
+      new_txt_content.append(f"#TITLE:{song['name'].split(' - ')[1]}")
+      new_txt_content.append(f"#MP3:{outfile_mp3_normalized}")
       new_txt_content.append(f"#COVER:{outfile_cover}")
       new_txt_content.append(f"#VIDEO:{outfile_video_for_bg}")
-    # remove lines containing the following Tags
+    # remove lines containing the following Tags (in order to override them)
+    elif line.startswith("#ARTIST"):
+      continue
     elif line.startswith("#COVER"):
       continue
     elif line.startswith("#VIDEO"):
       continue
     elif line.startswith("#VIDEOGAP"):
+      continue
+    elif line.startswith("#TITLE"):
       continue
     else:
       new_txt_content.append(line)

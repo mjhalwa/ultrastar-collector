@@ -39,12 +39,12 @@ python ultrastar-collector.py ./test
 - `Die Ärzte - Deine Schuld`: Umlaute in Titel, Dateiname und Text
 - `Die Ärzte - Junge`: `-F` enthält eine `DASH video` Datei, die eine bessere Auflösung unter 720p bieten würde
 - `Die Ärzte - Männer sind Schweine`: leiser als andere Lieder
-- `Disney's Aladdin - A Whole New World`: Volle Youtube-URL
-- `Disney's Zoomania (Shakira) - Try Everything`: short Youtube-URL
 - `Die Prinzen - Alles Nur Geklaut`: keine besseren aber `DASH video`s und Text mit fehlenden Spaces zwischen den Wörtern
+- `Disney's Aladdin - A Whole New World`: Volle Youtube-URL, `ARTIST` und `TITLE` in txt-Datei entspricht nicht Artist im Dateinamen
+- `Disney's Der König Der Löwen - Hakuna Matata`: DOMAIN `www.youtube.com`, `ARTIST` in txt-Datei entspricht nicht Artist im Dateinamen
+- `Disney's DuckTales (Jeff Pescetto) - Theme (en)`: bestes Video hat 720p und 3k Bitrate, Auswahl kollidiert mit Video ohne Audio mit 720p und 1164k Bitrate. Da die Videodatei nach `720p` benannt wird, könnte der Download der Background-Video-Datei (ohne Audio) Die Datei mit Audio überschreiben, `ARTIST` und `TITLE` in txt-Datei entspricht nicht Artist im Dateinamen
+- `Disney's Zoomania (Shakira) - Try Everything`: short Youtube-URL, `ARTIST` in txt-Datei entspricht nicht Artist im Dateinamen
 - `Fall Out Boy - My Songs Know What You Did in The Dark (Light 'Em Up)`: Langer Songtitel bzw. langer Dateiname und in der Folge auch Verzeichnisname
-- `DuckTales`: bestes Video hat 720p und 3k Bitrate, Auswahl kollidiert mit Video ohne Audio mit 720p und 1164k Bitrate. Da die Videodatei nach `720p` benannt wird, könnte der Download der Background-Video-Datei (ohne Audio) Die Datei mit Audio überschreiben
-- `Hakuna Matata`: DOMAIN `www.youtube.com`
 
 ## Lautstärke anpassen
 
