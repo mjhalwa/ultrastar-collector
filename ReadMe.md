@@ -36,8 +36,9 @@ Test starten
 python ultrastar-collector.py ./test
 ```
 
-- `Die Ärzte - Junge`: `-F` enthält eine `DASH video` Datei, die eine bessere Auflösung unter 720p bieten würde
 - `Die Ärzte - Deine Schuld`: Umlaute in Titel, Dateiname und Text
+- `Die Ärzte - Junge`: `-F` enthält eine `DASH video` Datei, die eine bessere Auflösung unter 720p bieten würde
+- `Die Ärzte - Männer sind Schweine`: leiser als andere Lieder
 - `Disney's Aladdin - A Whole New World`: Volle Youtube-URL
 - `Disney's Zoomania (Shakira) - Try Everything`: short Youtube-URL
 - `Die Prinzen - Alles Nur Geklaut`: keine besseren aber `DASH video`s und Text mit fehlenden Spaces zwischen den Wörtern
