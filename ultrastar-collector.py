@@ -90,6 +90,13 @@ def get_valid_song_list( source_directory ):
       continue
     files['cover'] = cover_file
 
+    # check (required) existance of Source.url file
+    source_file = os.path.join(source_directory, f"{song['name']} - Source.url")
+    if not os.path.isfile(source_file):
+      print(f"{crossmark} {song['name']}: txt-Ursprungs-Linkdatei '{source_file}' fehlt")
+      continue
+    files['source'] = source_file
+
     # check (optional) existance of info file
     info_file = os.path.join(source_directory, f"{song['name']}.info")
     if os.path.isfile(info_file):
@@ -366,6 +373,9 @@ for song in songs:
 
   outfile_cover = os.path.basename(song['files']['cover'])
   os.rename( song['files']['cover'], os.path.join(song['output directory'], outfile_cover) )
+
+  outfile_source = os.path.basename(song['files']['source'])
+  os.rename( song['files']['source'], os.path.join(song['output directory'], outfile_source) )
 
   outfile_url = os.path.basename(song['files']['url'])
   os.rename( song['files']['url'], os.path.join(song['output directory'], outfile_url) )
