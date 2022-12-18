@@ -7,7 +7,7 @@ import locale
 import re
 from datetime import datetime
 
-VERSION = "0.2.0-post"
+VERSION = "0.3.0"
 
 allowed_video_domains = [
   "youtube.com",
