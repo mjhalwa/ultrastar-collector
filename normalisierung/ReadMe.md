@@ -7,7 +7,94 @@
     python norm.py
     ```
 
+    output:
+
+    ``` log
+    sample_1-circleoflife.mp3: simple...
+    sample_1-circleoflife.mp3: dual...
+    {
+            "input_i" : "-23.98",
+            "input_tp" : "-3.39",
+            "input_lra" : "16.20",
+            "input_thresh" : "-35.22",
+            "output_i" : "-22.04",
+            "output_tp" : "-2.01",
+            "output_lra" : "8.10",
+            "output_thresh" : "-32.16",
+            "normalization_type" : "dynamic",
+            "target_offset" : "-0.96"
+    }
+
+    linear :)
+    sample_1-circleoflife.mp3 done
+    sample_2-dragonball.mp3: simple...
+    sample_2-dragonball.mp3: dual...
+    {
+            "input_i" : "-7.09",
+            "input_tp" : "3.84",
+            "input_lra" : "3.00",
+            "input_thresh" : "-17.12",
+            "output_i" : "-22.58",
+            "output_tp" : "-10.09",
+            "output_lra" : "2.50",
+            "output_thresh" : "-32.59",
+            "normalization_type" : "dynamic",
+            "target_offset" : "-0.42"
+    }
+
+    linear :)
+    sample_2-dragonball.mp3 done
+    sample_3-maennersindschweine.mp3: simple...
+    sample_3-maennersindschweine.mp3: dual...
+    {
+            "input_i" : "-23.94",
+            "input_tp" : "-10.45",
+            "input_lra" : "6.20",
+            "input_thresh" : "-34.06",
+            "output_i" : "-22.35",
+            "output_tp" : "-8.26",
+            "output_lra" : "5.30",
+            "output_thresh" : "-32.49",
+            "normalization_type" : "dynamic",
+            "target_offset" : "-0.65"
+    }
+
+    linear :)
+    sample_3-maennersindschweine.mp3 done
+    sample_4-kannesliebesein.mp3: simple...
+    sample_4-kannesliebesein.mp3: dual...
+    {
+            "input_i" : "-27.14",
+            "input_tp" : "-10.58",
+            "input_lra" : "13.90",
+            "input_thresh" : "-37.77",
+            "output_i" : "-21.31",
+            "output_tp" : "-2.84",
+            "output_lra" : "7.40",
+            "output_thresh" : "-31.58",
+            "normalization_type" : "dynamic",
+            "target_offset" : "-1.69"
+    }
+
+    linear :)
+    sample_4-kannesliebesein.mp3 done
+    done
+    ```
+
 3. Vergleiche Konvertierte Musikdateien in `./dual_norm` und `simple_norm`, wo die Lautstärke eher ähnlich laut wirkt
+4. Analyse der Dateien mit [Sonic Visualizer](https://www.sonicvisualiser.org/)
+
+    Input:
+
+    ![Amplituden-Analyse Eingangs-Samples](./input.png)
+
+    Simple (vermutlich dynamisch):
+
+    ![Amplituden-Analyse Eingangs-Samples](./simple_norm.png)
+
+    Dual (laut Ausgabe linear):
+
+    ![Amplituden-Analyse Ausgangs-Samples](./dual_norm.png)
 
 ## Manueller 2-stufiger Test
 
@@ -53,10 +140,10 @@ mkdir linear
     ffmpeg -i .\input\sample_1-circleoflife.mp3 -af loudnorm=I=-23:TP=-2.0:LRA=7.0:measured_I=-24.0:measured_TP=-3.4:measured_LRA=16.2:measured_thresh=-35.2:offset=-1:linear=true:print_format=summary -f null -
     ```
 
-    Sofern die vorletzte Zeile `Dynamic` lautet, als `LRA` statt dem Default von `7.0` den aufgerundeten Wert von `Input LRA` verwenden, bei `Linear` allerdings mit Schritt 3. fortfahren
+    Sofern die vorletzte Zeile `Dynamic` lautet, als `LRA` statt dem Default von `7.0` den Wert von `Input LRA` verwenden, bei `Linear` allerdings mit Schritt 3. fortfahren
 
     ``` ps1
-    ffmpeg -i .\input\sample_1-circleoflife.mp3 -af loudnorm=I=-23:TP=-2.0:LRA=17:measured_I=-24.0:measured_TP=-3.4:measured_LRA=16.2:measured_thresh=-35.2:offset=-1:linear=true:print_format=summary -f null -
+    ffmpeg -i .\input\sample_1-circleoflife.mp3 -af loudnorm=I=-23:TP=-2.0:LRA=16.2:measured_I=-24.0:measured_TP=-3.4:measured_LRA=16.2:measured_thresh=-35.2:offset=-1:linear=true:print_format=summary -f null -
     ```
 
     Nun sollte `Linear` stehen
@@ -64,7 +151,11 @@ mkdir linear
 3. Ausgabe durch verwenden der Werte aus Schritt 2, bei denen `Linear` in der Ausgabe stand
 
     ``` ps1
-    ffmpeg -i .\input\sample_1-circleoflife.mp3 -af loudnorm=I=-23:TP=-2.0:LRA=17:measured_I=-24.0:measured_TP=-3.4:measured_LRA=16.2:measured_thresh=-35.2:offset=-1:linear=true ./linear/sample_1-circleoflife.mp3
+    ffmpeg -i .\input\sample_1-circleoflife.mp3 -af loudnorm=I=-23:TP=-2.0:LRA=7.0:measured_I=-24.0:measured_TP=-3.4:measured_LRA=16.2:measured_thresh=-35.2:offset=-1:linear=true ./linear/sample_1-circleoflife.mp3
+
+    # bzw.
+
+    ffmpeg -i .\input\sample_1-circleoflife.mp3 -af loudnorm=I=-23:TP=-2.0:LRA=16.2:measured_I=-24.0:measured_TP=-3.4:measured_LRA=16.2:measured_thresh=-35.2:offset=-1:linear=true ./linear/sample_1-circleoflife.mp3
     ```
 
 ### sample_1
