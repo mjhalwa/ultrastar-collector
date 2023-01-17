@@ -176,16 +176,10 @@ ffmpeg -i .\input\sample_1-circleoflife.mp3 -af loudnorm=I=-23:TP=-2.0:LRA=7.0:p
 # Target Offset:        -1.0 LU
 ```
 
-2nd run
+2nd run (+ validate -> `dynamic`)
 
 ``` ps1
-ffmpeg -i .\input\sample_1-circleoflife.mp3 -af loudnorm=I=-23:TP=-2.0:LRA=7.0:measured_I=-24.0:measured_TP=-3.4:measured_LRA=16.2:measured_thresh=-35.2:offset=-1:linear=true ./linear/sample_1-circleoflife.mp3
-```
-
-validate
-
-``` ps1
-ffmpeg -i .\input\sample_1-circleoflife.mp3 -af loudnorm=I=-23:TP=-2.0:LRA=7.0:measured_I=-24.0:measured_TP=-3.4:measured_LRA=16.2:measured_thresh=-35.2:offset=-1:linear=true:print_format=summary -f null -
+ffmpeg -i .\input\sample_1-circleoflife.mp3 -af loudnorm=I=-23:TP=-2.0:LRA=7.0:measured_I=-24.0:measured_TP=-3.4:measured_LRA=16.2:measured_thresh=-35.2:offset=-1:linear=true:print_format=summary ./linear/sample_1-circleoflife.mp3
 # Input Integrated:    -24.0 LUFS
 # Input True Peak:      -3.4 dBTP
 # Input LRA:            16.2 LU
@@ -200,10 +194,10 @@ ffmpeg -i .\input\sample_1-circleoflife.mp3 -af loudnorm=I=-23:TP=-2.0:LRA=7.0:m
 # Target Offset:        +0.0 LU
 ```
 
-__improved__ `LRA=17`
+__improved__ `LRA=17` (+ validate -> `linear`)
 
 ``` ps1
-ffmpeg -i .\input\sample_1-circleoflife.mp3 -af loudnorm=I=-23:TP=-2.0:LRA=17:measured_I=-24.0:measured_TP=-3.4:measured_LRA=16.2:measured_thresh=-35.2:offset=-1:linear=true:print_format=summary -f null -
+ffmpeg -i .\input\sample_1-circleoflife.mp3 -af loudnorm=I=-23:TP=-2.0:LRA=17:measured_I=-24.0:measured_TP=-3.4:measured_LRA=16.2:measured_thresh=-35.2:offset=-1:linear=true:print_format=summary ./linear/sample_1-circleoflife.mp3
 # Input Integrated:    -24.0 LUFS
 # Input True Peak:      -3.5 dBTP
 # Input LRA:            16.2 LU
@@ -216,8 +210,6 @@ ffmpeg -i .\input\sample_1-circleoflife.mp3 -af loudnorm=I=-23:TP=-2.0:LRA=17:me
 #
 # Normalization Type:   Linear
 # Target Offset:        -0.0 LU
-
-ffmpeg -i .\input\sample_1-circleoflife.mp3 -af loudnorm=I=-23:TP=-2.0:LRA=17:measured_I=-24.0:measured_TP=-3.4:measured_LRA=16.2:measured_thresh=-35.2:offset=-1:linear=true ./linear/sample_1-circleoflife.mp3
 ```
 
 ### sample_2
@@ -238,16 +230,10 @@ ffmpeg -i .\input\sample_2-dragonball.mp3 -af loudnorm=I=-23:TP=-2.0:LRA=7.0:pri
 # Target Offset:        -0.4 LU
 ```
 
-2nd run
+2nd run (+ validate)
 
 ``` ps1
-ffmpeg -i .\input\sample_2-dragonball.mp3 -af loudnorm=I=-23:TP=-2.0:LRA=7.0:measured_I=-7.1:measured_TP=3.8:measured_LRA=3.0:measured_thresh=-17.1:offset=-0.4:linear=true ./linear/sample_2-dragonball.mp3
-```
-
-validiere
-
-``` ps1
-ffmpeg -i .\input\sample_2-dragonball.mp3 -af loudnorm=I=-23:TP=-2.0:LRA=7.0:measured_I=-7.1:measured_TP=3.8:measured_LRA=3.0:measured_thresh=-17.1:offset=-0.4:linear=true:print_format=summary -f null -
+ffmpeg -i .\input\sample_2-dragonball.mp3 -af loudnorm=I=-23:TP=-2.0:LRA=7.0:measured_I=-7.1:measured_TP=3.8:measured_LRA=3.0:measured_thresh=-17.1:offset=-0.4:linear=true:print_format=summary ./linear/sample_2-dragonball.mp3
 # Input Integrated:     -7.0 LUFS
 # Input True Peak:      +3.8 dBTP
 # Input LRA:             2.9 LU
@@ -280,16 +266,10 @@ ffmpeg -i .\input\sample_3-maennersindschweine.mp3 -af loudnorm=I=-23:TP=-2.0:LR
 # Target Offset:        -0.7 LU
 ```
 
-2nd run
+2nd run (+ validate)
 
 ``` ps1
-ffmpeg -i .\input\sample_3-maennersindschweine.mp3 -af loudnorm=I=-23:TP=-2.0:LRA=7.0:measured_I=-23.9:measured_TP=-10.4:measured_LRA=6.2:measured_thresh=-34.1:offset=-0.7:linear=true ./linear/sample_3-maennersindschweine.mp3
-```
-
-validiere
-
-``` ps1
-ffmpeg -i .\input\sample_3-maennersindschweine.mp3 -af loudnorm=I=-23:TP=-2.0:LRA=7.0:measured_I=-23.9:measured_TP=-10.4:measured_LRA=6.2:measured_thresh=-34.1:offset=-0.7:linear=true:print_format=summary -f null -
+ffmpeg -i .\input\sample_3-maennersindschweine.mp3 -af loudnorm=I=-23:TP=-2.0:LRA=7.0:measured_I=-23.9:measured_TP=-10.4:measured_LRA=6.2:measured_thresh=-34.1:offset=-0.7:linear=true:print_format=summary ./linear/sample_3-maennersindschweine.mp3
 # Input Integrated:    -23.9 LUFS
 # Input True Peak:     -10.5 dBTP
 # Input LRA:             6.3 LU
@@ -322,16 +302,10 @@ ffmpeg -i .\input\sample_4-kannesliebesein.mp3 -af loudnorm=I=-23:TP=-2.0:LRA=7.
 # Target Offset:        -1.7 LU
 ```
 
-2nd run
+2nd run (+ validate -> `dynamic`)
 
 ``` ps1
-ffmpeg -i .\input\sample_4-kannesliebesein.mp3 -af loudnorm=I=-23:TP=-2.0:LRA=7.0:measured_I=-27.1:measured_TP=-10.6:measured_LRA=13.9:measured_thresh=-37.8:offset=-1.7:linear=true ./linear/sample_4-kannesliebesein.mp3
-```
-
-validate
-
-``` ps1
-ffmpeg -i .\input\sample_4-kannesliebesein.mp3 -af loudnorm=I=-23:TP=-2.0:LRA=7.0:measured_I=-27.1:measured_TP=-10.6:measured_LRA=13.9:measured_thresh=-37.8:offset=-1.7:linear=true:print_format=summary -f null -
+ffmpeg -i .\input\sample_4-kannesliebesein.mp3 -af loudnorm=I=-23:TP=-2.0:LRA=7.0:measured_I=-27.1:measured_TP=-10.6:measured_LRA=13.9:measured_thresh=-37.8:offset=-1.7:linear=true:print_format=summary ./linear/sample_4-kannesliebesein.mp3
 # Input Integrated:    -27.1 LUFS
 # Input True Peak:     -10.6 dBTP
 # Input LRA:            13.9 LU
@@ -346,10 +320,10 @@ ffmpeg -i .\input\sample_4-kannesliebesein.mp3 -af loudnorm=I=-23:TP=-2.0:LRA=7.
 # Target Offset:        +0.2 LU
 ```
 
-__improved__ `LRA=14`
+__improved__ `LRA=14` (+ validate -> `linear`)
 
 ``` ps1
-ffmpeg -i .\input\sample_4-kannesliebesein.mp3 -af loudnorm=I=-23:TP=-2.0:LRA=14:measured_I=-27.1:measured_TP=-10.6:measured_LRA=13.9:measured_thresh=-37.8:offset=-1.7:linear=true:print_format=summary -f null -
+ffmpeg -i .\input\sample_4-kannesliebesein.mp3 -af loudnorm=I=-23:TP=-2.0:LRA=14:measured_I=-27.1:measured_TP=-10.6:measured_LRA=13.9:measured_thresh=-37.8:offset=-1.7:linear=true:print_format=summary ./linear/sample_4-kannesliebesein.mp3
 # Input Integrated:    -27.1 LUFS
 # Input True Peak:     -10.6 dBTP
 # Input LRA:            13.9 LU
@@ -362,6 +336,4 @@ ffmpeg -i .\input\sample_4-kannesliebesein.mp3 -af loudnorm=I=-23:TP=-2.0:LRA=14
 #
 # Normalization Type:   Linear
 # Target Offset:        -0.0 LU
-
-ffmpeg -i .\input\sample_4-kannesliebesein.mp3 -af loudnorm=I=-23:TP=-2.0:LRA=14:measured_I=-27.1:measured_TP=-10.6:measured_LRA=13.9:measured_thresh=-37.8:offset=-1.7:linear=true ./linear/sample_4-kannesliebesein.mp3
 ```

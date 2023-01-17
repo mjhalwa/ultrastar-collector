@@ -42,8 +42,8 @@ for file in os.listdir('input'):
   # use measured_lra, if bigger than default_lra
   lra = measured_LRA if float(measured_LRA) > default_lra else default_lra
 
-  # - validate execution will have normalization_type linear
-  command = ['ffmpeg', '-i', f'input/{file}', '-af', f'loudnorm=I=-23:LRA={lra}:tp=-2:measured_I={measured_I}:measured_LRA={measured_LRA}:measured_tp={measured_tp}:measured_thresh={measured_thresh}:offset={offset}:linear=true:print_format=json', '-f', 'null', '-']
+  # - execution + validate will have normalization_type linear
+  command = ['ffmpeg', '-i', f'input/{file}', '-af', f'loudnorm=I=-23:LRA={lra}:tp=-2:measured_I={measured_I}:measured_LRA={measured_LRA}:measured_tp={measured_tp}:measured_thresh={measured_thresh}:offset={offset}:linear=true:print_format=json', '-y', f'dual_norm/{file}']
   result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   analysis = result.stderr.decode(locale.getencoding()).split('\r\n')[-13:]
   analysis_json = json.loads('\r\n'.join(analysis))
@@ -54,9 +54,6 @@ for file in os.listdir('input'):
     print(f"linear :)")
   else:
     print(f"!!! ERROR: unknown normalization type: {normalization_type} !!!")
-
-  command = ['ffmpeg', '-i', f'input/{file}', '-af', f'loudnorm=I=-23:LRA={lra}:tp=-2:measured_I={measured_I}:measured_LRA={measured_LRA}:measured_tp={measured_tp}:measured_thresh={measured_thresh}:offset={offset}:linear=true', '-y', f'dual_norm/{file}']
-  result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
   print(f'{file} done')
 
